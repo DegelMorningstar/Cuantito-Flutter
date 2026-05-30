@@ -1,0 +1,32 @@
+﻿00:00 +0: loading D:/PROYECTOS/Cuantito/cuantito/test/data/app_database_test.dart
+00:00 +0 -1: loading D:/PROYECTOS/Cuantito/cuantito/test/data/app_database_test.dart [E]
+  Failed to load "D:/PROYECTOS/Cuantito/cuantito/test/data/app_database_test.dart":
+  Compilation failed for testPath=D:/PROYECTOS/Cuantito/cuantito/test/data/app_database_test.dart: lib/data/local/tables.dart:31:17: Error: Can't declare a member that conflicts with an inherited one.
+    IntColumn get dateTime => integer()();
+                  ^^^^^^^^
+  /C:/Users/Yael_/AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.33.0/lib/src/dsl/table.dart:186:27: Context: This is the inherited member.
+    ColumnBuilder<DateTime> dateTime() => _isGenerated();
+                            ^^^^^^^^
+  lib/data/local/app_database.g.dart:255:7: Error: Can't inherit members that conflict with each other.
+  class $MovementsTable extends Movements
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^...
+  /C:/Users/Yael_/AppData/Local/Pub/Cache/hosted/pub.dev/drift-2.33.0/lib/src/dsl/table.dart:186:27: Context: This is one inherited member.
+    ColumnBuilder<DateTime> dateTime() => _isGenerated();
+                            ^^^^^^^^
+  lib/data/local/tables.dart:31:17: Context: This is the other inherited member.
+    IntColumn get dateTime => integer()();
+                  ^^^^^^^^
+  test/data/app_database_test.dart:32:17: Error: 'isNotNull' is imported from both 'package:drift/src/runtime/query_builder/query_builder.dart' and 'package:matcher/src/core_matchers.dart'.
+      expect(cat, isNotNull);
+                  ^^^^^^^^^
+  test/data/app_database_test.dart:69:15: Error: 'isNotNull' is imported from both 'package:drift/src/runtime/query_builder/query_builder.dart' and 'package:matcher/src/core_matchers.dart'.
+      expect(m, isNotNull);
+                ^^^^^^^^^
+  test/data/app_database_test.dart:75:42: Error: 'isNull' is imported from both 'package:drift/src/runtime/query_builder/query_builder.dart' and 'package:matcher/src/core_matchers.dart'.
+      expect(await db.getMovementById(id), isNull);
+                                           ^^^^^^
+  .
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  D:/PROYECTOS/Cuantito/cuantito/test/data/app_database_test.dart: loading D:/PROYECTOS/Cuantito/cuantito/test/data/app_database_test.dart

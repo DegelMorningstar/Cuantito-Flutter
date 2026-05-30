@@ -1,0 +1,8 @@
+﻿Analyzing cuantito...                                           
+
+   info - The member 'dateTime' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation - lib\data\local\tables.dart:31:17 - annotate_overrides
+  error - Class 'Movements' can't define field 'dateTime' and have method 'Table.dateTime' with the same name. Try converting the getter to a method, or renaming the field to a name that doesn't conflict - lib\data\local\tables.dart:31:17 - conflicting_field_and_method
+  error - The name 'isNotNull' is defined in the libraries 'package:drift/src/runtime/query_builder/query_builder.dart (via package:drift/drift.dart)' and 'package:matcher/src/core_matchers.dart (via package:flutter_test/flutter_test.dart)'. Try using 'as prefix' for one of the import directives, or hiding the name from all but one of the imports - test\data\app_database_test.dart:32:17 - ambiguous_import
+  error - The name 'isNotNull' is defined in the libraries 'package:drift/src/runtime/query_builder/query_builder.dart (via package:drift/drift.dart)' and 'package:matcher/src/core_matchers.dart (via package:flutter_test/flutter_test.dart)'. Try using 'as prefix' for one of the import directives, or hiding the name from all but one of the imports - test\data\app_database_test.dart:69:15 - ambiguous_import
+  error - The name 'isNull' is defined in the libraries 'package:drift/src/runtime/query_builder/query_builder.dart (via package:drift/drift.dart)' and 'package:matcher/src/core_matchers.dart (via package:flutter_test/flutter_test.dart)'. Try using 'as prefix' for one of the import directives, or hiding the name from all but one of the imports - test\data\app_database_test.dart:75:42 - ambiguous_import
+
