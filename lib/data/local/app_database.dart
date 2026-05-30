@@ -60,11 +60,11 @@ class AppDatabase extends _$AppDatabase {
   Future<List<Movement>> getMovementsBetween(int startMs, int endMs) =>
       (select(movements)
             ..where((m) =>
-                m.dateTime.isBiggerOrEqualValue(startMs) &
-                m.dateTime.isSmallerThanValue(endMs))
+                m.transactionDate.isBiggerOrEqualValue(startMs) &
+                m.transactionDate.isSmallerThanValue(endMs))
             ..orderBy([
               (m) =>
-                  OrderingTerm(expression: m.dateTime, mode: OrderingMode.desc),
+                  OrderingTerm(expression: m.transactionDate, mode: OrderingMode.desc),
             ]))
           .get();
 }

@@ -325,12 +325,12 @@ class $MovementsTable extends Movements
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _dateTimeMeta = const VerificationMeta(
-    'dateTime',
+  static const VerificationMeta _transactionDateMeta = const VerificationMeta(
+    'transactionDate',
   );
   @override
-  late final GeneratedColumn<int> dateTime = GeneratedColumn<int>(
-    'date_time',
+  late final GeneratedColumn<int> transactionDate = GeneratedColumn<int>(
+    'transaction_date',
     aliasedName,
     false,
     type: DriftSqlType.int,
@@ -344,7 +344,7 @@ class $MovementsTable extends Movements
     categoryId,
     method,
     type,
-    dateTime,
+    transactionDate,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -405,13 +405,16 @@ class $MovementsTable extends Movements
     } else if (isInserting) {
       context.missing(_typeMeta);
     }
-    if (data.containsKey('date_time')) {
+    if (data.containsKey('transaction_date')) {
       context.handle(
-        _dateTimeMeta,
-        dateTime.isAcceptableOrUnknown(data['date_time']!, _dateTimeMeta),
+        _transactionDateMeta,
+        transactionDate.isAcceptableOrUnknown(
+          data['transaction_date']!,
+          _transactionDateMeta,
+        ),
       );
     } else if (isInserting) {
-      context.missing(_dateTimeMeta);
+      context.missing(_transactionDateMeta);
     }
     return context;
   }
@@ -446,9 +449,9 @@ class $MovementsTable extends Movements
         DriftSqlType.string,
         data['${effectivePrefix}type'],
       )!,
-      dateTime: attachedDatabase.typeMapping.read(
+      transactionDate: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}date_time'],
+        data['${effectivePrefix}transaction_date'],
       )!,
     );
   }
@@ -466,7 +469,7 @@ class Movement extends DataClass implements Insertable<Movement> {
   final int categoryId;
   final String method;
   final String type;
-  final int dateTime;
+  final int transactionDate;
   const Movement({
     required this.id,
     required this.amountCents,
@@ -474,7 +477,7 @@ class Movement extends DataClass implements Insertable<Movement> {
     required this.categoryId,
     required this.method,
     required this.type,
-    required this.dateTime,
+    required this.transactionDate,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -487,7 +490,7 @@ class Movement extends DataClass implements Insertable<Movement> {
     map['category_id'] = Variable<int>(categoryId);
     map['method'] = Variable<String>(method);
     map['type'] = Variable<String>(type);
-    map['date_time'] = Variable<int>(dateTime);
+    map['transaction_date'] = Variable<int>(transactionDate);
     return map;
   }
 
@@ -501,7 +504,7 @@ class Movement extends DataClass implements Insertable<Movement> {
       categoryId: Value(categoryId),
       method: Value(method),
       type: Value(type),
-      dateTime: Value(dateTime),
+      transactionDate: Value(transactionDate),
     );
   }
 
@@ -517,7 +520,7 @@ class Movement extends DataClass implements Insertable<Movement> {
       categoryId: serializer.fromJson<int>(json['categoryId']),
       method: serializer.fromJson<String>(json['method']),
       type: serializer.fromJson<String>(json['type']),
-      dateTime: serializer.fromJson<int>(json['dateTime']),
+      transactionDate: serializer.fromJson<int>(json['transactionDate']),
     );
   }
   @override
@@ -530,7 +533,7 @@ class Movement extends DataClass implements Insertable<Movement> {
       'categoryId': serializer.toJson<int>(categoryId),
       'method': serializer.toJson<String>(method),
       'type': serializer.toJson<String>(type),
-      'dateTime': serializer.toJson<int>(dateTime),
+      'transactionDate': serializer.toJson<int>(transactionDate),
     };
   }
 
@@ -541,7 +544,7 @@ class Movement extends DataClass implements Insertable<Movement> {
     int? categoryId,
     String? method,
     String? type,
-    int? dateTime,
+    int? transactionDate,
   }) => Movement(
     id: id ?? this.id,
     amountCents: amountCents ?? this.amountCents,
@@ -549,7 +552,7 @@ class Movement extends DataClass implements Insertable<Movement> {
     categoryId: categoryId ?? this.categoryId,
     method: method ?? this.method,
     type: type ?? this.type,
-    dateTime: dateTime ?? this.dateTime,
+    transactionDate: transactionDate ?? this.transactionDate,
   );
   Movement copyWithCompanion(MovementsCompanion data) {
     return Movement(
@@ -565,7 +568,9 @@ class Movement extends DataClass implements Insertable<Movement> {
           : this.categoryId,
       method: data.method.present ? data.method.value : this.method,
       type: data.type.present ? data.type.value : this.type,
-      dateTime: data.dateTime.present ? data.dateTime.value : this.dateTime,
+      transactionDate: data.transactionDate.present
+          ? data.transactionDate.value
+          : this.transactionDate,
     );
   }
 
@@ -578,7 +583,7 @@ class Movement extends DataClass implements Insertable<Movement> {
           ..write('categoryId: $categoryId, ')
           ..write('method: $method, ')
           ..write('type: $type, ')
-          ..write('dateTime: $dateTime')
+          ..write('transactionDate: $transactionDate')
           ..write(')'))
         .toString();
   }
@@ -591,7 +596,7 @@ class Movement extends DataClass implements Insertable<Movement> {
     categoryId,
     method,
     type,
-    dateTime,
+    transactionDate,
   );
   @override
   bool operator ==(Object other) =>
@@ -603,7 +608,7 @@ class Movement extends DataClass implements Insertable<Movement> {
           other.categoryId == this.categoryId &&
           other.method == this.method &&
           other.type == this.type &&
-          other.dateTime == this.dateTime);
+          other.transactionDate == this.transactionDate);
 }
 
 class MovementsCompanion extends UpdateCompanion<Movement> {
@@ -613,7 +618,7 @@ class MovementsCompanion extends UpdateCompanion<Movement> {
   final Value<int> categoryId;
   final Value<String> method;
   final Value<String> type;
-  final Value<int> dateTime;
+  final Value<int> transactionDate;
   const MovementsCompanion({
     this.id = const Value.absent(),
     this.amountCents = const Value.absent(),
@@ -621,7 +626,7 @@ class MovementsCompanion extends UpdateCompanion<Movement> {
     this.categoryId = const Value.absent(),
     this.method = const Value.absent(),
     this.type = const Value.absent(),
-    this.dateTime = const Value.absent(),
+    this.transactionDate = const Value.absent(),
   });
   MovementsCompanion.insert({
     this.id = const Value.absent(),
@@ -630,12 +635,12 @@ class MovementsCompanion extends UpdateCompanion<Movement> {
     required int categoryId,
     required String method,
     required String type,
-    required int dateTime,
+    required int transactionDate,
   }) : amountCents = Value(amountCents),
        categoryId = Value(categoryId),
        method = Value(method),
        type = Value(type),
-       dateTime = Value(dateTime);
+       transactionDate = Value(transactionDate);
   static Insertable<Movement> custom({
     Expression<int>? id,
     Expression<int>? amountCents,
@@ -643,7 +648,7 @@ class MovementsCompanion extends UpdateCompanion<Movement> {
     Expression<int>? categoryId,
     Expression<String>? method,
     Expression<String>? type,
-    Expression<int>? dateTime,
+    Expression<int>? transactionDate,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -652,7 +657,7 @@ class MovementsCompanion extends UpdateCompanion<Movement> {
       if (categoryId != null) 'category_id': categoryId,
       if (method != null) 'method': method,
       if (type != null) 'type': type,
-      if (dateTime != null) 'date_time': dateTime,
+      if (transactionDate != null) 'transaction_date': transactionDate,
     });
   }
 
@@ -663,7 +668,7 @@ class MovementsCompanion extends UpdateCompanion<Movement> {
     Value<int>? categoryId,
     Value<String>? method,
     Value<String>? type,
-    Value<int>? dateTime,
+    Value<int>? transactionDate,
   }) {
     return MovementsCompanion(
       id: id ?? this.id,
@@ -672,7 +677,7 @@ class MovementsCompanion extends UpdateCompanion<Movement> {
       categoryId: categoryId ?? this.categoryId,
       method: method ?? this.method,
       type: type ?? this.type,
-      dateTime: dateTime ?? this.dateTime,
+      transactionDate: transactionDate ?? this.transactionDate,
     );
   }
 
@@ -697,8 +702,8 @@ class MovementsCompanion extends UpdateCompanion<Movement> {
     if (type.present) {
       map['type'] = Variable<String>(type.value);
     }
-    if (dateTime.present) {
-      map['date_time'] = Variable<int>(dateTime.value);
+    if (transactionDate.present) {
+      map['transaction_date'] = Variable<int>(transactionDate.value);
     }
     return map;
   }
@@ -712,7 +717,7 @@ class MovementsCompanion extends UpdateCompanion<Movement> {
           ..write('categoryId: $categoryId, ')
           ..write('method: $method, ')
           ..write('type: $type, ')
-          ..write('dateTime: $dateTime')
+          ..write('transactionDate: $transactionDate')
           ..write(')'))
         .toString();
   }
@@ -729,7 +734,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final Index idxMovementDatetime = Index(
     'idx_movement_datetime',
-    'CREATE INDEX idx_movement_datetime ON movements (date_time)',
+    'CREATE INDEX idx_movement_datetime ON movements (transaction_date)',
   );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -1004,7 +1009,7 @@ typedef $$MovementsTableCreateCompanionBuilder =
       required int categoryId,
       required String method,
       required String type,
-      required int dateTime,
+      required int transactionDate,
     });
 typedef $$MovementsTableUpdateCompanionBuilder =
     MovementsCompanion Function({
@@ -1014,7 +1019,7 @@ typedef $$MovementsTableUpdateCompanionBuilder =
       Value<int> categoryId,
       Value<String> method,
       Value<String> type,
-      Value<int> dateTime,
+      Value<int> transactionDate,
     });
 
 final class $$MovementsTableReferences
@@ -1075,8 +1080,8 @@ class $$MovementsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get dateTime => $composableBuilder(
-    column: $table.dateTime,
+  ColumnFilters<int> get transactionDate => $composableBuilder(
+    column: $table.transactionDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1138,8 +1143,8 @@ class $$MovementsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get dateTime => $composableBuilder(
-    column: $table.dateTime,
+  ColumnOrderings<int> get transactionDate => $composableBuilder(
+    column: $table.transactionDate,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1195,8 +1200,10 @@ class $$MovementsTableAnnotationComposer
   GeneratedColumn<String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
 
-  GeneratedColumn<int> get dateTime =>
-      $composableBuilder(column: $table.dateTime, builder: (column) => column);
+  GeneratedColumn<int> get transactionDate => $composableBuilder(
+    column: $table.transactionDate,
+    builder: (column) => column,
+  );
 
   $$CategoriesTableAnnotationComposer get categoryId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
@@ -1256,7 +1263,7 @@ class $$MovementsTableTableManager
                 Value<int> categoryId = const Value.absent(),
                 Value<String> method = const Value.absent(),
                 Value<String> type = const Value.absent(),
-                Value<int> dateTime = const Value.absent(),
+                Value<int> transactionDate = const Value.absent(),
               }) => MovementsCompanion(
                 id: id,
                 amountCents: amountCents,
@@ -1264,7 +1271,7 @@ class $$MovementsTableTableManager
                 categoryId: categoryId,
                 method: method,
                 type: type,
-                dateTime: dateTime,
+                transactionDate: transactionDate,
               ),
           createCompanionCallback:
               ({
@@ -1274,7 +1281,7 @@ class $$MovementsTableTableManager
                 required int categoryId,
                 required String method,
                 required String type,
-                required int dateTime,
+                required int transactionDate,
               }) => MovementsCompanion.insert(
                 id: id,
                 amountCents: amountCents,
@@ -1282,7 +1289,7 @@ class $$MovementsTableTableManager
                 categoryId: categoryId,
                 method: method,
                 type: type,
-                dateTime: dateTime,
+                transactionDate: transactionDate,
               ),
           withReferenceMapper: (p0) => p0
               .map(

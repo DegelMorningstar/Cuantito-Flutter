@@ -14,13 +14,15 @@ class Categories extends Table {
 /// Movimientos (ingresos/egresos).
 ///
 /// - `amountCents`: monto en **centavos** (`int`, decisión F0; elimina R-01).
-/// - `dateTime`: instante en **epoch milisegundos**.
+/// - `transactionDate`: instante en **epoch milisegundos**. (Se evita el nombre
+///   `dateTime` porque colisiona con un miembro heredado de Drift `Table`.)
 /// - `categoryId`: **FK declarada** hacia [Categories] (mitiga R-05).
-/// - Índices en `categoryId` y `dateTime` para las consultas por categoría/mes.
+/// - Índices en `categoryId` y `transactionDate` para las consultas por
+///   categoría/mes.
 /// - `method`/`type` se guardan como texto (nombre del enum); el parseo
 ///   tolerante a valores desconocidos se hace al mapear a dominio (F4, R-08).
 @TableIndex(name: 'idx_movement_category', columns: {#categoryId})
-@TableIndex(name: 'idx_movement_datetime', columns: {#dateTime})
+@TableIndex(name: 'idx_movement_datetime', columns: {#transactionDate})
 class Movements extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get amountCents => integer()();
@@ -28,5 +30,5 @@ class Movements extends Table {
   IntColumn get categoryId => integer().references(Categories, #id)();
   TextColumn get method => text()();
   TextColumn get type => text()();
-  IntColumn get dateTime => integer()();
+  IntColumn get transactionDate => integer()();
 }

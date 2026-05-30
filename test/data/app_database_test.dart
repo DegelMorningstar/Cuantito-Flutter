@@ -1,7 +1,7 @@
 // Tests de integración de la capa de datos (Drift) en BD en memoria (F2).
 
 import 'package:cuantito/data/local/app_database.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -60,7 +60,7 @@ void main() {
         categoryId: catId,
         method: 'DEBITO',
         type: 'EGRESO',
-        dateTime: DateTime(2026, 5, 15).millisecondsSinceEpoch,
+        transactionDate: DateTime(2026, 5, 15).millisecondsSinceEpoch,
         description: const Value('Súper'),
       ),
     );
@@ -83,7 +83,7 @@ void main() {
           categoryId: 999, // no existe
           method: 'DEBITO',
           type: 'EGRESO',
-          dateTime: DateTime(2026, 5, 15).millisecondsSinceEpoch,
+          transactionDate: DateTime(2026, 5, 15).millisecondsSinceEpoch,
         ),
       ),
       throwsA(isA<Exception>()),
@@ -101,7 +101,7 @@ void main() {
           categoryId: catId,
           method: 'DEBITO',
           type: 'EGRESO',
-          dateTime: dt.millisecondsSinceEpoch,
+          transactionDate: dt.millisecondsSinceEpoch,
         ),
       );
     }
