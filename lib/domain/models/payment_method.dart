@@ -20,4 +20,7 @@ enum PaymentMethod {
       orElse: () => debito,
     );
   }
+
+  /// El otro método (para el toggle de NewMovement, RN-003).
+  PaymentMethod get toggled => this == debito ? credito : debito;
 }

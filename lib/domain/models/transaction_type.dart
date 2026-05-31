@@ -22,4 +22,8 @@ enum TransactionType {
       orElse: () => egreso,
     );
   }
+
+  /// El otro tipo (para el toggle de NewMovement, RN-003).
+  TransactionType get toggled =>
+      this == ingreso ? egreso : ingreso;
 }

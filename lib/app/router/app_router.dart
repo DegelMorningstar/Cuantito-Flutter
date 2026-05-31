@@ -36,12 +36,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/',
       name: AppRoute.newMovement,
-      builder: (context, state) {
-        final categoryId = int.tryParse(
-          state.uri.queryParameters['categoryId'] ?? '',
-        );
-        return NewMovementPage(categoryId: categoryId);
-      },
+      builder: (context, state) => const NewMovementPage(),
     ),
     GoRoute(
       path: '/movements',
