@@ -1,43 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/di/providers.dart';
 
 /// Contenido de un slide del onboarding (porta `OnboardingPage` del origen).
 ///
-/// Las ilustraciones del origen son *VectorDrawables* de Android (no portables a
-/// Flutter directamente); por ahora se usa un icono representativo como
-/// marcador. Sustituir por las ilustraciones reales (SVG/PNG) es un pendiente de
-/// pulido (F10/F11).
+/// Las ilustraciones son las del origen: se convirtieron de *VectorDrawable* de
+/// Android a SVG (ver `tool/generate_onboarding_svgs.dart`) y se muestran con
+/// `flutter_svg`, conservando nitidez a cualquier resolución.
 class _OnboardingSlide {
   const _OnboardingSlide({
-    required this.icon,
+    required this.asset,
     required this.title,
     required this.description,
   });
 
-  final IconData icon;
+  final String asset;
   final String title;
   final String description;
 }
 
 const List<_OnboardingSlide> _slides = [
   _OnboardingSlide(
-    icon: Icons.edit_note,
+    asset: 'assets/onboarding/onboarding_one.svg',
     title: 'Registro de gastos y de ingresos',
     description:
         'Anota tus transacciones diarias de forma rápida y sencilla para tener '
         'un control total de tus finanzas.',
   ),
   _OnboardingSlide(
-    icon: Icons.receipt_long,
+    asset: 'assets/onboarding/onboarding_two.svg',
     title: 'Mis gastos',
     description:
         'Visualiza la lista de tus gastos para entender a dónde va tu dinero.',
   ),
   _OnboardingSlide(
-    icon: Icons.category,
+    asset: 'assets/onboarding/onboarding_three.svg',
     title: 'Categorías',
     description:
         'Organiza tus gastos por categorías para identificar áreas de ahorro y '
@@ -127,7 +127,12 @@ class _SlideContent extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(slide.icon, size: 160, color: theme.colorScheme.primary),
+          SvgPicture.asset(
+            slide.asset,
+            height: 250,
+            fit: BoxFit.contain,
+            semanticsLabel: slide.title,
+          ),
           const SizedBox(height: 32),
           Text(
             slide.title,
