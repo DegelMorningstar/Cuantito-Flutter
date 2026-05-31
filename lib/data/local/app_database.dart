@@ -51,6 +51,14 @@ class AppDatabase extends _$AppDatabase {
   Future<Movement?> getMovementById(int id) =>
       (select(movements)..where((m) => m.id.equals(id))).getSingleOrNull();
 
+  /// Todos los movimientos, ordenados por fecha descendente.
+  Future<List<Movement>> getAllMovements() => (select(movements)
+        ..orderBy([
+          (m) =>
+              OrderingTerm(expression: m.transactionDate, mode: OrderingMode.desc),
+        ]))
+      .get();
+
   Future<int> deleteMovement(int id) =>
       (delete(movements)..where((m) => m.id.equals(id))).go();
 
