@@ -40,6 +40,9 @@ dependencies:
   drift_flutter: ^0.3.0
   shared_preferences: ^2.5.5
   intl: ^0.20.2
+  sqlite3: ^3.3.2
+  path_provider: ^2.1.5
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:
