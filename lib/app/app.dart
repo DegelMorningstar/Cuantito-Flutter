@@ -19,9 +19,10 @@ class CuantitoApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Cuantito',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      // El rediseño es oscuro (decisión: solo oscuro, fiel al diseño).
+      theme: AppTheme.dark,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
       // Locale fijo es-MX (decisión F0): textos de los widgets de Material
       // (p. ej. showDatePicker) en español y consistentes con los formateadores
       // de moneda/fecha (R-06). La app es solo en español (discovery §1).

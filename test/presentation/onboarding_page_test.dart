@@ -46,15 +46,15 @@ void main() {
     expect(find.text('Registro de gastos y de ingresos'), findsOneWidget);
     expect(find.text('Siguiente'), findsOneWidget);
     expect(find.text('Saltar'), findsOneWidget);
-    // No estamos aún en la pantalla de inicio.
-    expect(find.text('Nuevo movimiento'), findsNothing);
+    // No estamos aún en la pantalla de inicio (wordmark del rediseño).
+    expect(find.text('cuantito'), findsNothing);
   });
 
   testWidgets('ejecuciones posteriores van directo a Nuevo movimiento',
       (tester) async {
     await pumpApp(tester, onboardingDone: true);
 
-    expect(find.text('Nuevo movimiento'), findsOneWidget);
+    expect(find.text('cuantito'), findsOneWidget);
     expect(find.text('Registro de gastos y de ingresos'), findsNothing);
   });
 
@@ -85,7 +85,7 @@ void main() {
     await tester.tap(find.text('Finalizar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Nuevo movimiento'), findsOneWidget);
+    expect(find.text('cuantito'), findsOneWidget);
     expect(prefs.getBool('onboarding_state'), isFalse);
   });
 
@@ -96,7 +96,7 @@ void main() {
     await tester.tap(find.text('Saltar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Nuevo movimiento'), findsOneWidget);
+    expect(find.text('cuantito'), findsOneWidget);
     expect(prefs.getBool('onboarding_state'), isFalse);
   });
 }

@@ -8,9 +8,8 @@ import '../../domain/models/movement.dart';
 import '../../domain/models/transaction_type.dart';
 import '../categories/icon_catalog.dart';
 import 'movements_list_notifier.dart';
-import 'movements_list_state.dart';
 
-/// Lista mensual de movimientos con totales (porta `MovementsListScreen`).
+/// Lista mensual de movimientos con resumen (rediseño "Movimientos").
 class MovementsListPage extends ConsumerWidget {
   const MovementsListPage({super.key});
 
@@ -19,74 +18,100 @@ class MovementsListPage extends ConsumerWidget {
     final asyncState = ref.watch(movementsListProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gastos'),
-        centerTitle: true,
-      ),
       body: SafeArea(
-        child: asyncState.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _ErrorView(
-            onRetry: () => ref.invalidate(movementsListProvider),
-          ),
-          data: (state) => _MovementsBody(state: state),
+        child: Column(
+          children: [
+            _Header(
+              onBack: () => context.canPop() ? context.pop() : context.go('/'),
+            ),
+            Expanded(
+              child: asyncState.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, _) => _ErrorView(
+                  onRetry: () => ref.invalidate(movementsListProvider),
+                ),
+                data: (state) {
+                  final notifier = ref.read(movementsListProvider.notifier);
+                  return Column(
+                    children: [
+                      _MonthSelector(
+                        label: state.monthLabel,
+                        canGoToNext: state.canGoToNext,
+                        onPrevious: notifier.goToPreviousMonth,
+                        onNext: notifier.goToNextMonth,
+                      ),
+                      _SummaryCard(
+                        expenseCents: state.totals.expenseCents,
+                        incomeCents: state.totals.incomeCents,
+                        balanceCents: state.totals.balanceCents,
+                      ),
+                      Expanded(
+                        child: state.movements.isEmpty
+                            ? const _EmptyView()
+                            : ListView.separated(
+                                padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                                itemCount: state.movements.length,
+                                separatorBuilder: (_, _) =>
+                                    const SizedBox(height: 8),
+                                itemBuilder: (context, index) {
+                                  final m = state.movements[index];
+                                  return _MovementRow(
+                                    movement: m,
+                                    onTap: () => context.pushNamed(
+                                      'detail',
+                                      pathParameters: {'id': '${m.id}'},
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _MovementsBody extends ConsumerWidget {
-  const _MovementsBody({required this.state});
+class _Header extends StatelessWidget {
+  const _Header({required this.onBack});
 
-  final MovementsListState state;
+  final VoidCallback onBack;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(movementsListProvider.notifier);
-    return Column(
-      children: [
-        _MonthSelector(
-          label: state.monthLabel,
-          canGoToNext: state.canGoToNext,
-          onPrevious: notifier.goToPreviousMonth,
-          onNext: notifier.goToNextMonth,
-        ),
-        _AmountSummary(
-          showExpenses: state.showExpenses,
-          totalCents: state.summaryCents,
-          onTap: notifier.toggleSummary,
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: Text(
-              'Historial',
-              style: Theme.of(context).textTheme.titleSmall,
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).extension<CuantitoColors>()!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Row(
+        children: [
+          Material(
+            color: c.surface2,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onBack,
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(Icons.arrow_back_ios_new, size: 18, color: c.textMedium),
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: state.movements.isEmpty
-              ? const _EmptyView()
-              : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  itemCount: state.movements.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final movement = state.movements[index];
-                    return _MovementItem(
-                      movement: movement,
-                      onTap: () => context.pushNamed(
-                        'detail',
-                        pathParameters: {'id': '${movement.id}'},
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Text(
+            'Movimientos',
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -106,21 +131,35 @@ class _MonthSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = Theme.of(context).extension<CuantitoColors>()!;
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          IconButton.filledTonal(
+          IconButton(
             onPressed: onPrevious,
             icon: const Icon(Icons.chevron_left),
+            color: c.textMedium,
             tooltip: 'Mes anterior',
           ),
-          Text(label, style: Theme.of(context).textTheme.titleMedium),
-          IconButton.filledTonal(
-            // Deshabilitado en el mes en curso: no se permiten meses futuros (RN-004).
+          SizedBox(
+            width: 160,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
+          IconButton(
+            // Deshabilitado en el mes en curso (RN-004).
             onPressed: canGoToNext ? onNext : null,
             icon: const Icon(Icons.chevron_right),
+            color: c.textMedium,
+            disabledColor: c.textDim,
             tooltip: 'Mes siguiente',
           ),
         ],
@@ -129,53 +168,128 @@ class _MonthSelector extends StatelessWidget {
   }
 }
 
-class _AmountSummary extends StatelessWidget {
-  const _AmountSummary({
-    required this.showExpenses,
-    required this.totalCents,
-    required this.onTap,
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.expenseCents,
+    required this.incomeCents,
+    required this.balanceCents,
   });
 
-  final bool showExpenses;
-  final int totalCents;
-  final VoidCallback onTap;
+  final int expenseCents;
+  final int incomeCents;
+  final int balanceCents;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.extension<CuantitoColors>()!;
-    final label = showExpenses ? 'Total Gastos' : 'Total Ingresos';
-    final color = showExpenses ? colors.expense : colors.income;
+    final c = theme.extension<CuantitoColors>()!;
+    final balancePositive = balanceCents >= 0;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            child: Column(
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 14),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+      decoration: BoxDecoration(
+        color: c.surface1,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          IntrinsicHeight(
+            child: Row(
               children: [
-                Text(label, style: theme.textTheme.bodyLarge),
-                const SizedBox(height: 4),
-                Text(
-                  formatCents(totalCents),
-                  style: theme.textTheme.headlineSmall
-                      ?.copyWith(color: color, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: _SummaryColumn(
+                    label: 'Egresos',
+                    value: '-${formatCents(expenseCents)}',
+                    color: c.expense,
+                  ),
+                ),
+                VerticalDivider(color: c.hairline, width: 1, thickness: 1),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: _SummaryColumn(
+                      label: 'Ingresos',
+                      value: '+${formatCents(incomeCents)}',
+                      color: c.income,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Divider(color: c.hairline, height: 1),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text('Balance',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: c.textDim)),
+                Text(
+                  '${balancePositive ? '+' : '-'}${formatCents(balanceCents.abs())}',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: balancePositive ? c.income : c.expense,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _MovementItem extends StatelessWidget {
-  const _MovementItem({required this.movement, required this.onTap});
+class _SummaryColumn extends StatelessWidget {
+  const _SummaryColumn({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final c = theme.extension<CuantitoColors>()!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: c.textDim,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.9,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          value,
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w700,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MovementRow extends StatelessWidget {
+  const _MovementRow({required this.movement, required this.onTap});
 
   final Movement movement;
   final VoidCallback onTap;
@@ -183,34 +297,87 @@ class _MovementItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.extension<CuantitoColors>()!;
-    final amountColor = movement.type == TransactionType.egreso
-        ? colors.expense
-        : colors.income;
-    final hasDescription =
+    final c = theme.extension<CuantitoColors>()!;
+    final isE = movement.type == TransactionType.egreso;
+    final amountColor = isE ? c.expense : c.income;
+    final hasDesc =
         movement.description != null && movement.description!.isNotEmpty;
+    final subtitle = [
+      _rowDate(movement.dateTime),
+      movement.method.label,
+      if (hasDesc) movement.description!,
+    ].join(' · ');
 
-    return Card(
+    return Material(
+      color: c.surface1,
+      borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
-      child: ListTile(
+      child: InkWell(
         onTap: onTap,
-        leading: CircleAvatar(
-          backgroundColor: theme.colorScheme.secondaryContainer,
-          foregroundColor: theme.colorScheme.onSecondaryContainer,
-          child: Icon(iconForName(movement.category.iconName)),
-        ),
-        title: Text(
-          hasDescription ? movement.description! : movement.category.name,
-        ),
-        subtitle: hasDescription ? Text(movement.category.name) : null,
-        trailing: Text(
-          formatCents(movement.amountCents),
-          style: theme.textTheme.bodyLarge
-              ?.copyWith(color: amountColor, fontWeight: FontWeight.bold),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: c.surface2,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(iconForName(movement.category.iconName),
+                    color: c.textMedium, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      movement.category.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          theme.textTheme.bodySmall?.copyWith(color: c.textDim),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '${isE ? '−' : '+'}${formatCents(movement.amountCents)}',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: amountColor,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// Fecha compacta para la fila: "Hoy" / "Ayer" / "d MMM yyyy".
+String _rowDate(DateTime d) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final day = DateTime(d.year, d.month, d.day);
+  final diff = today.difference(day).inDays;
+  if (diff == 0) return 'Hoy';
+  if (diff == 1) return 'Ayer';
+  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  return '${d.day} ${months[d.month - 1]} ${d.year}';
 }
 
 class _EmptyView extends StatelessWidget {
@@ -218,17 +385,15 @@ class _EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = Theme.of(context).extension<CuantitoColors>()!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 48,
-            color: Theme.of(context).colorScheme.outline,
-          ),
+          Text('📭', style: TextStyle(fontSize: 36, color: c.textDim)),
           const SizedBox(height: 12),
-          const Text('Sin movimientos este mes'),
+          Text('Sin movimientos este mes',
+              style: TextStyle(color: c.textDim, fontSize: 14)),
         ],
       ),
     );

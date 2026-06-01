@@ -67,23 +67,72 @@ void main() {
     expect(find.text('150'), findsOneWidget); // display del monto
 
     await tester.tap(find.text('Guardar'));
-    await tester.pumpAndSettle();
+    await tester.pump(); // arranca _save()
+    await tester.pump(const Duration(milliseconds: 100)); // resuelve DB + estado guardado
 
-    expect(find.text('Registrado con éxito'), findsOneWidget);
+    // El rediseño muestra el check "Guardado" en vez de un SnackBar.
+    expect(find.text('Guardado'), findsOneWidget);
 
     final movements = await movementRepo.getAll();
     expect(movements.length, 1);
     expect(movements.single.amountCents, 15000);
+
+    // Deja expirar el timer de la animación de guardado (≈950 ms).
+    await tester.pump(const Duration(seconds: 1));
   });
 
-  testWidgets('monto cero queda bloqueado con mensaje', (tester) async {
+  testWidgets('el sheet de categoría cambia la categoría seleccionada',
+      (tester) async {
+    await categoryRepo.add(name: 'Comida', iconName: 'Filled.Restaurant');
+    await categoryRepo.add(name: 'Transporte', iconName: 'Filled.DirectionsBus');
+
+    await pumpPage(tester);
+    // Por defecto se preselecciona la primera (orden alfabético): Comida.
+    expect(find.text('Comida'), findsOneWidget);
+
+    // Abre el sheet desde el chip de categoría.
+    await tester.tap(find.text('Comida'));
+    await tester.pumpAndSettle();
+    expect(find.text('Categoría'), findsOneWidget); // título del sheet
+    expect(find.text('Nueva'), findsOneWidget); // tile de creación
+
+    // Elige otra categoría.
+    await tester.tap(find.text('Transporte'));
+    await tester.pumpAndSettle();
+
+    // El chip ahora muestra la nueva categoría y el sheet se cerró.
+    expect(find.text('Transporte'), findsOneWidget);
+    expect(find.text('Categoría'), findsNothing);
+  });
+
+  testWidgets('el sheet de fecha permite elegir Ayer', (tester) async {
+    await categoryRepo.add(name: 'Comida', iconName: 'Filled.Restaurant');
+
+    await pumpPage(tester);
+    // El chip de fecha arranca en "Hoy".
+    expect(find.text('Hoy'), findsOneWidget);
+
+    await tester.tap(find.text('Hoy'));
+    await tester.pumpAndSettle();
+    expect(find.text('Fecha'), findsOneWidget); // título del sheet
+
+    await tester.tap(find.text('Ayer'));
+    await tester.pumpAndSettle();
+
+    // El chip refleja la fecha elegida.
+    expect(find.text('Ayer'), findsOneWidget);
+    expect(find.text('Fecha'), findsNothing);
+  });
+
+  testWidgets('monto cero queda bloqueado (no persiste)', (tester) async {
     await categoryRepo.add(name: 'Comida', iconName: 'Filled.Restaurant');
 
     await pumpPage(tester);
     await tester.tap(find.text('Guardar'));
+    // El rediseño sacude el monto (sin SnackBar); deja terminar la animación.
     await tester.pumpAndSettle();
 
-    expect(find.text('El monto no puede ser cero'), findsOneWidget);
+    expect(find.text('0.00'), findsOneWidget); // el monto sigue en cero
     expect(await movementRepo.getAll(), isEmpty);
   });
 }

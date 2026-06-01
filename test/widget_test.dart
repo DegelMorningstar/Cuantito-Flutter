@@ -21,6 +21,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Nuevo movimiento'), findsOneWidget);
+    expect(find.text('cuantito'), findsOneWidget);
   });
 }

@@ -79,7 +79,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('muestra los movimientos del mes con sus totales', (tester) async {
+  testWidgets('muestra los movimientos y el resumen del mes', (tester) async {
     final category = await seedCategory();
     await addMovement(
       category: category,
@@ -95,32 +95,19 @@ void main() {
 
     await pumpPage(tester);
 
-    // Item con descripción muestra descripción + nombre de categoría.
-    expect(find.text('Restaurante'), findsOneWidget);
-    // Item sin descripción muestra el nombre de la categoría.
-    expect(find.text('Comida'), findsWidgets);
+    // El título de cada fila es el nombre de la categoría (en ambos items).
+    expect(find.text('Comida'), findsNWidgets(2));
+    // La descripción va en el subtítulo (parte de una cadena más larga).
+    expect(find.textContaining('Restaurante'), findsOneWidget);
 
-    // Resumen por defecto: egresos.
-    expect(find.text('Total Gastos'), findsOneWidget);
-    expect(find.text(r'$150.00'), findsWidgets);
-  });
-
-  testWidgets('el toggle del resumen alterna egresos/ingresos', (tester) async {
-    final category = await seedCategory();
-    await addMovement(
-      category: category,
-      amountCents: 50000,
-      type: TransactionType.ingreso,
-    );
-
-    await pumpPage(tester);
-    expect(find.text('Total Gastos'), findsOneWidget);
-
-    await tester.tap(find.text('Total Gastos'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Total Ingresos'), findsOneWidget);
-    expect(find.text(r'$500.00'), findsWidgets);
+    // Resumen: egresos, ingresos y balance simultáneos (sin toggle).
+    expect(find.text('EGRESOS'), findsOneWidget);
+    expect(find.text('INGRESOS'), findsOneWidget);
+    // Los montos aparecen en la fila y en el resumen (independiente del signo).
+    expect(find.textContaining(r'150.00'), findsWidgets);
+    expect(find.textContaining(r'500.00'), findsWidgets);
+    expect(find.text('Balance'), findsOneWidget);
+    expect(find.textContaining(r'350.00'), findsOneWidget); // balance = 500 - 150
   });
 
   testWidgets('estado vacío cuando no hay movimientos en el mes',
@@ -159,13 +146,14 @@ void main() {
     );
 
     await pumpPage(tester);
-    // No aparece en el mes en curso.
-    expect(find.text('Mes pasado'), findsNothing);
+    // No aparece en el mes en curso (la descripción va en el subtítulo).
+    expect(find.textContaining('Mes pasado'), findsNothing);
 
     await tester.tap(find.byIcon(Icons.chevron_left));
     await tester.pumpAndSettle();
 
-    expect(find.text('Mes pasado'), findsOneWidget);
-    expect(find.text(r'$123.45'), findsWidgets);
+    expect(find.textContaining('Mes pasado'), findsOneWidget);
+    // El monto aparece en la fila y en el resumen (egresos + balance).
+    expect(find.textContaining(r'123.45'), findsWidgets);
   });
 }
